@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.17;
 
 contract Fundraising{
     
@@ -118,10 +118,9 @@ contract Fundraising{
         tiers.pop();    
     }
 
-    //To remove  the comment
     function refund() public {
         updateCampaignState();
-        // require(campaignState == CampaignState.Failed, "!No refunds!");
+        require(campaignState == CampaignState.Failed, "!No refunds!");
         uint256 amount = funders[msg.sender].contribution;
         require(amount > 0, "!Nothing to refund!");
 

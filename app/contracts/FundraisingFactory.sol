@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.17;
 
 import {Fundraising} from "./Fundraising.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
