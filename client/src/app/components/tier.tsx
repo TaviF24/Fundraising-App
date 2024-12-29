@@ -11,9 +11,10 @@ type TierProps = {
     tier: Tier;
     index: number;
     contract: ThirdwebContract;
+    isEditing: boolean;
 };
 
-export default function Tier( {tier, index, contract}: TierProps ){
+export default function Tier( {tier, index, contract, isEditing}: TierProps ){
     return(
         <div className="max-w-sm flex flex-col justify-between p-6 bg-white border border-slate-100 rounded-lg shadow">
             <div>
@@ -43,6 +44,24 @@ export default function Tier( {tier, index, contract}: TierProps ){
                 >Select
                 </TransactionButton>
             </div>
+            {isEditing && (
+                <TransactionButton
+                    transaction={() => prepareContractCall({
+                        contract,
+                        method: "function removeTier(uint256 index)",
+                        params: [BigInt(index)],
+                      })}
+                    onTransactionConfirmed={async () => alert("Tier removed successfully")}
+                    style={{
+                        marginTop: "1rem",
+                        backgroundColor: "red",
+                        color: "white",
+                        padding: "0.5rem 1rem",
+                        borderRadius: "0.375rem",
+                        cursor: "pointer"
+                    }}
+                >Remove</TransactionButton>
+            )}
         </div>
     )
 }

@@ -3,15 +3,15 @@ import { client } from "@/app/client";
 import Tier from "@/app/components/tier";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { getContract } from "thirdweb";
+import { getContract, prepareContractCall, ThirdwebContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
-import { useActiveAccount, useReadContract } from "thirdweb/react";
+import { lightTheme, TransactionButton, useActiveAccount, useReadContract } from "thirdweb/react";
 
 export default function CampaignPage(){
     const account = useActiveAccount();
     const {campaignAddress} = useParams();
     const [isEditing, setIsEditing] = useState(false);
-    const [isModalOpen, setIsModal] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const contract = getContract({
         client: client,
@@ -142,16 +142,92 @@ export default function CampaignPage(){
                                         tier={formattedTier}
                                         index={index}
                                         contract={contract}
+                                        isEditing={isEditing}
                                     />
                                 );
                             })
-                        ) : ( 
-                        <p>No tiers</p>
+                        ) : (
+                            !isEditing && (
+                                <p>No tiers</p>
+                            )
+                            
                         )
+                    )}
+                    {isEditing && (
+                        <button 
+                            className="max-w-sm flex flex-col text-center justify-center items-center font-semibold p-6 bg-blue-500 rounded-lg"
+                            onClick={() => setIsModalOpen(true)}
+                        >+ Add Tier
+                        </button>
                     )}
                 </div>
             </div>
+            {isModalOpen && (
+                <CreateModal
+                    setIsModalOpen={setIsModalOpen}
+                    contract={contract}
+                />
+            )}
         </div>
+    )
+}
 
+type CreateModalProps = {
+    setIsModalOpen: (value: boolean) => void;
+    contract: ThirdwebContract;
+
+};
+
+const CreateModal = ({
+    setIsModalOpen,
+    contract,
+}: CreateModalProps) => {
+    const [tierName, setTierName] = useState<string>("");
+    const [tierAmount, setTierAmount] = useState<bigint>(1n);
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center backdrop-blur-md">
+            <div className="w-1/2 bg-slate-100 p-6 rounded-md">
+                <div className="flex justify-between items-center mb-4">
+                    <p className="text-lg font-semibold">Create a funding tier</p>
+                    <button 
+                        className="text-sm px-4 py-2 bg-slate-600 text-white rounded-md"
+                        onClick={() => setIsModalOpen(false)}
+                    >Close</button>
+                </div>
+                <div className="flex flex-col">
+                <label>Tier name:</label>
+                <input
+                    type="text"
+                    value={tierName}
+                    onChange={(e) => setTierName(e.target.value)}
+                    placeholder="Tier name"
+                    className="mb-4 px-4 py-2 bg-slate-200 rounded-md"
+                />
+
+                <label>Tier cost:</label>
+                <input
+                    type="number"
+                    value={parseInt(tierAmount.toString())}
+                    onChange={(e) => setTierAmount(BigInt(e.target.value))}
+                    placeholder="Tier name"
+                    className="mb-4 px-4 py-2 bg-slate-200 rounded-md"
+                />
+                <TransactionButton
+                    transaction={() => prepareContractCall({
+                        contract,
+                        method:
+                          "function addTier(string _name, uint256 _amount)",
+                        params: [tierName, tierAmount],
+                      })}
+                    onTransactionConfirmed={async () => {
+                        alert("Tier added successfully!")
+                        setIsModalOpen(false)
+                    }}
+                    theme={lightTheme()}
+                >Add tier</TransactionButton>
+                </div>
+            </div> 
+        </div>
     )
 }
