@@ -62,7 +62,6 @@ export default function CampaignPage(){
         balancePercentage = 100;
     }
 
-
     const { data: tiers, isPending: isPendingTiers } = useReadContract({
         contract,
         method:
@@ -88,11 +87,17 @@ export default function CampaignPage(){
                 {!isPendingName && (
                     <p className="text-4xl font-semibold">{campaignName}</p>
                 )}
-                {owner === account?.address && (
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-md" onClick={() => setIsEditing(!isEditing)}>
-                        {isEditing ? "Done" : "Edit"}
-                    </button>
-                )}
+                <div>
+                    {goal && balance && goal <= balance && owner === account?.address && (
+                        <button className="px-4 py-2 bg-blue-500 text-white rounded-md mr-5">Withdraw</button>
+                    )}
+                    {owner === account?.address && (
+                        <button className="px-4 py-2 bg-blue-500 text-white rounded-md" onClick={() => setIsEditing(!isEditing)}>
+                            {isEditing ? "Done" : "Edit"}
+                        </button>
+                    )}
+                </div>
+                
             </div>
             <div className="my-4">
                 {!isPendingDesc && (

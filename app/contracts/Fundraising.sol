@@ -47,6 +47,10 @@ contract Fundraising{
         _;
     }
 
+    event WithdrawAvailable(address indexed campaignAddress, string message);
+
+    event RefundAvailable(address indexed campaignAddress, string campaignName, string message);
+
     constructor(address _owner, string memory _campaignName, string memory _description, uint256  _goal, uint256  _nrOfDays){
         campaignName = _campaignName;
         description = _description;
@@ -62,19 +66,22 @@ contract Fundraising{
 
     function updateCampaignState() internal /*campaignOpen*/{
         if(checkCampaignState()){
-            if(deadline > block.timestamp){ 
-                if(goal < getContractBalance()){
+            if(deadline > block.timestamp){     // the deadline is not over
+                if(goal <= getContractBalance()){    // the goal has been reached
                     campaignState = CampaignState.Successful;
+                    emit WithdrawAvailable(address(this), "Withdrawal available");
                 }
                 else{
                     campaignState = CampaignState.Active;
                 }
-            }else{
-                if(goal < getContractBalance()){
-                    campaignState = CampaignState.Failed;
-                }
-                else{
+            }else{                          // the deadline is over
+                if(goal <= getContractBalance()){    // the goal has been reached
                     campaignState = CampaignState.Successful;
+                    emit WithdrawAvailable(address(this), "Withdrawal available");
+                }
+                else{                               
+                    campaignState = CampaignState.Failed;
+                    emit RefundAvailable(address(this), campaignName, "Refund available, campaign not successful");
                 }
             }
         }
@@ -107,7 +114,7 @@ contract Fundraising{
         require(tierIndex>=0 && tierIndex < tiers.length, "!Invalid index!");
     }
 
-    function addTier(string memory _name, uint256 _amount) public onlyOwner{
+    function addTier(string memory _name, uint256 _amount) public onlyOwner campaignOpen(){
         require(_amount > 0, "!The amount must be greater than zero!");
         tiers.push(Tier(_name, _amount, 0));
     }
@@ -124,8 +131,8 @@ contract Fundraising{
         uint256 amount = funders[msg.sender].contribution;
         require(amount > 0, "!Nothing to refund!");
 
-        funders[msg.sender].contribution = 0;
         payable(msg.sender).transfer(amount);
+        funders[msg.sender].contribution = 0;
     }
 
     function isFunder(address user, uint256 tierIndex) public view returns (bool) {
