@@ -24,7 +24,7 @@ export default function Tier( {tier, index, contract, isEditing}: TierProps ){
                 </div>
             </div>
             <div className="flex flex-row justify-between items-end">
-                <p className="text-xs font-semibold">Total funders: {tier.funders.toString()}</p>
+                <p className="text-xs font-semibold">Total donations: {tier.funders.toString()}</p>
                 <TransactionButton 
                     transaction={() => prepareContractCall({
                         contract,

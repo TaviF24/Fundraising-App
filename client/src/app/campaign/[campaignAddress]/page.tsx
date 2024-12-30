@@ -89,12 +89,30 @@ export default function CampaignPage(){
                 )}
                 <div>
                     {goal && balance && goal <= balance && owner === account?.address && (
-                        <button className="px-4 py-2 bg-blue-500 text-white rounded-md mr-5">Withdraw</button>
+                        
+                        <TransactionButton 
+                            transaction={() => prepareContractCall({
+                                contract,
+                                method: "function withdraw()",
+                                params: [],
+                            })}
+                            onTransactionConfirmed={async () => alert("Withdraw confirmed!")}
+                            style={{
+                                backgroundColor: "#3b82f6",
+                                paddingLeft: "0.5rem",
+                                paddingRight: "0.5rem",
+                                marginRight: "1.25rem",
+                                color: "white",
+                                borderRadius: "0.375rem",
+                                cursor: "pointer"
+                            }}
+                        >Withdraw</TransactionButton>
                     )}
                     {owner === account?.address && (
-                        <button className="px-4 py-2 bg-blue-500 text-white rounded-md" onClick={() => setIsEditing(!isEditing)}>
-                            {isEditing ? "Done" : "Edit"}
-                        </button>
+                        <button 
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md" 
+                            onClick={() => setIsEditing(!isEditing)}
+                        >{isEditing ? "Done" : "Edit"}</button>
                     )}
                 </div>
                 
