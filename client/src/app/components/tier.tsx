@@ -35,7 +35,7 @@ export default function Tier( {tier, index, contract, isEditing}: TierProps ){
                     onTransactionConfirmed={async () => alert("Transaction confirmed!")}
                     style={{
                         marginTop: "1rem",
-                        backgroundColor: "#2563EB",
+                        backgroundColor: "#14532d",
                         color: "white",
                         padding: "0.5rem 1rem",
                         borderRadius: "0.3rem",

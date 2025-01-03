@@ -56,7 +56,7 @@ export default function CampaignPage(){
 
     const totalBalance = balance?.toString();
     const totalGoal = goal?.toString();
-    let balancePercentage = (parseInt(totalBalance as string) / parseInt(totalGoal as string)) * 100;
+    let balancePercentage = parseFloat((parseInt(totalBalance as string) / parseInt(totalGoal as string) * 100).toFixed(2));
 
     if(balancePercentage > 100){
         balancePercentage = 100;
@@ -128,7 +128,7 @@ export default function CampaignPage(){
                             })}
                             onTransactionConfirmed={async () => alert("Withdraw confirmed!")}
                             style={{
-                                backgroundColor: "#3b82f6",
+                                backgroundColor: "#14532d",
                                 paddingLeft: "0.5rem",
                                 paddingRight: "0.5rem",
                                 marginRight: "1.25rem",
@@ -140,7 +140,7 @@ export default function CampaignPage(){
                     )}
                     {owner === account?.address && (
                         <button 
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md" 
+                            className="px-4 py-2 bg-green-900 text-white rounded-md" 
                             onClick={() => setIsEditing(!isEditing)}
                         >{isEditing ? "Done" : "Edit"}</button>
                     )}
@@ -167,7 +167,7 @@ export default function CampaignPage(){
                     <div className="mb-4">
                         <p className="text-lg font-semibold">Campaign goal: ${goal?.toString()}</p>
                         <div className="relative w-full h-6 bg-gray-200 rounded-full dark:bg-gray-700">
-                            <div className="h-6 bg-blue-600 rounded-full dark:bg-blue-500 text-right" style={{width: `${balancePercentage?.toString()}%`}}>
+                            <div className="h-6 bg-green-900 rounded-full dark:bg-green-800 text-right" style={{width: `${balancePercentage?.toString()}%`}}>
                                 <p className="text-white dark:text-white text-xs p-1">
                                     ${balance?.toString()}
                                 </p>
@@ -210,7 +210,7 @@ export default function CampaignPage(){
                     )}
                     {isEditing && (
                         <button 
-                            className="max-w-sm flex flex-col text-center justify-center items-center font-semibold p-6 bg-blue-500 rounded-lg"
+                            className="max-w-sm flex flex-col text-center justify-center items-center font-semibold p-6 bg-green-900 text-white rounded-lg"
                             onClick={() => setIsModalOpen(true)}
                         >+ Add Tier
                         </button>
@@ -223,26 +223,28 @@ export default function CampaignPage(){
                     contract={contract}
                 />
             )}
-            <div>
-                <p className="text-lg font-semibold mt-4">Events:</p>
-                <div className="bg-blue-300 mx-10 h-auto rounded-lg py-3 px-5">
-                    {fEvents && fEvents.map((ev, index) => (
-                        <div key={index} className="bg-slate-200 rounded-sm mb-4">
-                            <p>{ev.args.funder} {ev.args.message}</p>
-                        </div>
-                    ))}
-                    {wEvents && wEvents.map((ev, index) => (
-                        <div key={index} className="bg-violet-400 rounded-sm mb-4">
-                            <p>{ev.args.message} for campaign {ev.args.campaignAddress}</p>
-                        </div>
-                    ))}
-                    {rEvents && rEvents.map((ev, index) => (
-                        <div key={index} className="bg-emerald-600 rounded-sm mb-4">
-                            <p>{ev.args.message}. Campaign: {ev.args.campaignName}</p>
-                        </div>
-                    ))}
+            {!isPendingTiers && (
+                <div>
+                    <p className="text-lg font-semibold mt-4">Events:</p>
+                    <div className="bg-gray-500 mx-10 h-auto rounded-lg py-3 px-5">
+                        {fEvents && fEvents.map((ev, index) => (
+                            <div key={index} className="bg-slate-200 rounded-sm mb-4">
+                                <p>{ev.args.funder} {ev.args.message}</p>
+                            </div>
+                        ))}
+                        {wEvents && wEvents.map((ev, index) => (
+                            <div key={index} className="bg-violet-400 rounded-sm mb-4">
+                                <p>{ev.args.message} for campaign {ev.args.campaignAddress}</p>
+                            </div>
+                        ))}
+                        {rEvents && rEvents.map((ev, index) => (
+                            <div key={index} className="bg-emerald-600 rounded-sm mb-4">
+                                <p>{ev.args.message}. Campaign: {ev.args.campaignName}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     )
 }

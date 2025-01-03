@@ -30,7 +30,7 @@ export default function DashboardPage(){
             <div className="flex flex-row justify-between items-center mb-8">
                 <p className="text-4xl font-semibold">Dashboard</p>
                 <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md" 
+                    className="px-4 py-2 bg-green-900 text-white rounded-md" 
                     onClick={() =>setIsModalOpen(true)}
                 >Create Campaign</button>
             </div>
