@@ -47,6 +47,8 @@ contract Fundraising{
         _;
     }
 
+    event HasFunded(address indexed campaignAddress, address funder, string message);
+
     event WithdrawAvailable(address indexed campaignAddress, string message);
 
     event RefundAvailable(address indexed campaignAddress, string campaignName, string message);
@@ -93,6 +95,7 @@ contract Fundraising{
         tiers[tierIndex].uses++;
         funders[msg.sender].contribution += msg.value;
         funders[msg.sender].fundedTiers[tierIndex] = true;
+        emit HasFunded(address(this), msg.sender, "Funded");
         updateCampaignState();
     }
 

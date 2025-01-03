@@ -3,9 +3,9 @@ import { client } from "@/app/client";
 import Tier from "@/app/components/tier";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { getContract, prepareContractCall, ThirdwebContract } from "thirdweb";
+import { getContract, prepareContractCall, prepareEvent, ThirdwebContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
-import { lightTheme, TransactionButton, useActiveAccount, useReadContract } from "thirdweb/react";
+import { lightTheme, TransactionButton, useActiveAccount, useContractEvents, useReadContract } from "thirdweb/react";
 
 export default function CampaignPage(){
     const account = useActiveAccount();
@@ -81,6 +81,36 @@ export default function CampaignPage(){
         params: [],
     });
 
+    const withdrawEvent = prepareEvent({
+        signature:
+          "event WithdrawAvailable(address indexed campaignAddress, string message)",
+    });
+
+    const refundEvent = prepareEvent({
+        signature:
+          "event RefundAvailable(address indexed campaignAddress, string campaignName, string message)",
+    });
+
+    const fundEvent = prepareEvent({
+        signature:
+          "event HasFunded(address indexed campaignAddress, address funder, string message)",
+    });
+
+    const { data: fEvents } = useContractEvents({
+        contract,
+        events: [fundEvent],
+    });
+
+    const { data: wEvents } = useContractEvents({
+        contract,
+        events: [withdrawEvent],
+    });
+
+    const { data: rEvents } = useContractEvents({
+        contract,
+        events: [refundEvent],
+    });
+
     return (
         <div className="mx-auto max-w-7xl px-2 mt-4 sm:px-6 lg:px-8">
             <div className="flex flex-row justify-between items-center">
@@ -126,9 +156,11 @@ export default function CampaignPage(){
                 )}
             </div>
             <div className="mb-4">
-                <p className="text-lg font-semibold">Deadline</p>
                 {!isPendingDeadline && (
-                    <p>{deadlineDate.toDateString()}</p>
+                    <div>
+                        <p className="text-lg font-semibold">Deadline:</p>
+                        <p>{deadlineDate.toDateString()}</p>
+                    </div>
                 )}
             </div>
             {!isPendingBalance && !isPendingGoal && (
@@ -147,7 +179,7 @@ export default function CampaignPage(){
                     </div>
             )}
             <div>
-                <p className="text-lg font-semibold">Tiers:</p>
+                {!isPendingTiers && (<p className="text-lg font-semibold">Tiers:</p>)}
                 <div className="grid grid-cols-3 gap-4">
                     {isPendingTiers ?(
                         <p>Loading...</p>
@@ -191,6 +223,26 @@ export default function CampaignPage(){
                     contract={contract}
                 />
             )}
+            <div>
+                <p className="text-lg font-semibold mt-4">Events:</p>
+                <div className="bg-blue-300 mx-10 h-auto rounded-lg py-3 px-5">
+                    {fEvents && fEvents.map((ev, index) => (
+                        <div key={index} className="bg-slate-200 rounded-sm mb-4">
+                            <p>{ev.args.funder} {ev.args.message}</p>
+                        </div>
+                    ))}
+                    {wEvents && wEvents.map((ev, index) => (
+                        <div key={index} className="bg-violet-400 rounded-sm mb-4">
+                            <p>{ev.args.message} for campaign {ev.args.campaignAddress}</p>
+                        </div>
+                    ))}
+                    {rEvents && rEvents.map((ev, index) => (
+                        <div key={index} className="bg-emerald-600 rounded-sm mb-4">
+                            <p>{ev.args.message}. Campaign: {ev.args.campaignName}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }
