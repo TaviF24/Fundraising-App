@@ -89,6 +89,10 @@ contract Fundraising{
         }
     }
 
+    function updateStateOfCampaign() public {
+        updateCampaignState();
+    }
+
     function fund(uint256 tierIndex) public payable campaignOpen notPaused{
         validIndex(tierIndex);
         require(msg.value == tiers[tierIndex].amount, "!Please select one of the options for amount!");  

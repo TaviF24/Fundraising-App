@@ -85,7 +85,7 @@ const CreateCampaignModal = ({setIsModalOpen} : CreateCampaignModalProps) => {
                     _durationInDays: campaignDeadline
                 },
                 publisher: "0x3e1C4B51Fe75F4C1028C17C65092081d6cC59dc3",
-                version: "1.0.6"
+                version: "1.0.7"
             });
             alert("Campaign created successfully")
         } catch(error){

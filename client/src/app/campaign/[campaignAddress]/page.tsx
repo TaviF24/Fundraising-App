@@ -3,9 +3,9 @@ import { client } from "@/app/client";
 import Tier from "@/app/components/tier";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getContract, prepareContractCall, prepareEvent, ThirdwebContract } from "thirdweb";
+import { getContract, prepareContractCall, ThirdwebContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
-import { lightTheme, TransactionButton, useActiveAccount, useContractEvents, useReadContract } from "thirdweb/react";
+import { lightTheme, TransactionButton, useActiveAccount, useReadContract } from "thirdweb/react";
 import { ContractEvent, ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 async function getEvents(address: string){
@@ -50,8 +50,7 @@ export default function CampaignPage(){
         params: [],
     });
 
-    const deadlineDate = new Date(parseInt(deadline?.toString() as string) * 1000);
-    const deadlineDatePassed = deadlineDate < new Date();
+    var deadlineDate = new Date(parseInt(deadline?.toString() as string) * 1000);
 
     const { data: goal, isPending: isPendingGoal } = useReadContract({
         contract,
@@ -88,41 +87,25 @@ export default function CampaignPage(){
         params: [],
     });
 
-    const { data: campaignState, isPending: isPendingState } = useReadContract({
+    const { data: status, isPending: isPendingStatus } = useReadContract({
         contract,
-        method: "function campaignState() view returns (uint8)",
+        method:
+          "function getCampaignStatus() view returns (uint8)",
         params: [],
-    });
+      });
 
-    const withdrawEvent = prepareEvent({
-        signature:
-          "event WithdrawAvailable(address indexed campaignAddress, string message)",
-    });
-
-    const refundEvent = prepareEvent({
-        signature:
-          "event RefundAvailable(address indexed campaignAddress, string campaignName, string message)",
-    });
-
-    const fundEvent = prepareEvent({
-        signature:
-          "event HasFunded(address indexed campaignAddress, address funder, string message)",
-    });
-
-    const { data: fEvents } = useContractEvents({
-        contract,
-        events: [fundEvent],
-    });
-
-    const { data: wEvents } = useContractEvents({
-        contract,
-        events: [withdrawEvent],
-    });
-
-    const { data: rEvents } = useContractEvents({
-        contract,
-        events: [refundEvent],
-    });
+    var campaignStatus = "";
+    switch(status){
+        case 0:
+            var campaignStatus = "Active";
+            break;
+        case 1:
+            var campaignStatus = "Successful";
+            break;
+        case 2:
+            var campaignStatus = "Unsuccessful";
+            break;
+    }
 
     const [allEvents, setAllEvents] = useState<ContractEvent<Record<string, any>>[] | null>(null);
 
@@ -147,9 +130,13 @@ export default function CampaignPage(){
                 {!isPendingName && (
                     <p className="text-4xl font-semibold">{campaignName}</p>
                 )}
+                {!isPendingStatus && (
+                    <div className={status==0 ? "bg-stone-700 text-white rounded-md" : status==1 ? "bg-green-600  text-white rounded-md" : "bg-red-950  text-white rounded-md"}>
+                        <p className="mx-5 my-2">{campaignStatus}</p>
+                    </div>
+                )}
                 <div>
                     {goal && balance && goal <= balance && owner === account?.address && (
-                        
                         <TransactionButton 
                             transaction={() => prepareContractCall({
                                 contract,
@@ -168,6 +155,25 @@ export default function CampaignPage(){
                             }}
                         >Withdraw</TransactionButton>
                     )}
+                    {deadlineDate < new Date() && status == 0 && owner === account?.address && (
+                        <TransactionButton 
+                            transaction={() => prepareContractCall({
+                                contract,
+                                method: "function updateStateOfCampaign()",
+                                params: [],
+                            })}
+                            onTransactionConfirmed={async () => alert("Campaign stopped!")}
+                            style={{
+                                backgroundColor: "#14532d",
+                                paddingLeft: "0.5rem",
+                                paddingRight: "0.5rem",
+                                marginRight: "1.25rem",
+                                color: "white",
+                                borderRadius: "0.375rem",
+                                cursor: "pointer"
+                            }}
+                        >Stop campaign</TransactionButton>
+                    )}
                     {owner === account?.address && (
                         <button 
                             className="px-4 py-2 bg-green-900 text-white rounded-md" 
@@ -175,7 +181,6 @@ export default function CampaignPage(){
                         >{isEditing ? "Done" : "Edit"}</button>
                     )}
                 </div>
-                
             </div>
             <div className="my-4">
                 {!isPendingDesc && (
