@@ -2,12 +2,23 @@
 import { client } from "@/app/client";
 import Tier from "@/app/components/tier";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getContract, prepareContractCall, prepareEvent, ThirdwebContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
 import { lightTheme, TransactionButton, useActiveAccount, useContractEvents, useReadContract } from "thirdweb/react";
-import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import {privateKey} from "./env.js"
+import { ContractEvent, ThirdwebSDK } from "@thirdweb-dev/sdk";
+
+async function getEvents(address: string){
+    try{
+        const sdk = new ThirdwebSDK("sepolia");
+        const contractSdk = await sdk.getContract(address);
+        const events = await contractSdk.events.getAllEvents();
+        return events;
+    } catch(error){
+        console.error(error);
+        return [];
+    }    
+}
 
 export default function CampaignPage(){
     const account = useActiveAccount();
@@ -113,16 +124,23 @@ export default function CampaignPage(){
         events: [refundEvent],
     });
 
-    const sdk = ThirdwebSDK.fromPrivateKey(privateKey, "sepolia")
-    const contractFromSdk = sdk.getContract(campaignAddress as string);
-    
-    // const runEvents = async function(){
-    //     const events = (await contractFromSdk).events.getAllEvents();
-        
-    //     console.log("Eventss:   ", events);
-    // }
+    const [allEvents, setAllEvents] = useState<ContractEvent<Record<string, any>>[] | null>(null);
 
-    // runEvents()
+    useEffect(() => {
+        async function fetchEvents() {
+          if (campaignAddress) {
+            try {
+              const events = await getEvents(campaignAddress as string);
+              setAllEvents(events);
+            } catch (error) {
+              console.error("Error fetching events:", error);
+            }
+          }
+        }
+    
+        fetchEvents();
+      }, [campaignAddress]);
+
     return (
         <div className="mx-auto max-w-7xl px-2 mt-4 sm:px-6 lg:px-8">
             <div className="flex flex-row justify-between items-center">
@@ -239,22 +257,21 @@ export default function CampaignPage(){
                 <div>
                     <p className="text-lg font-semibold mt-4">Events:</p>
                     <div className="bg-gray-500 mx-10 h-auto rounded-lg py-3 px-5">
-                        {fEvents && fEvents.map((ev, index) => (
-                            <div key={index} className="bg-slate-200 rounded-sm mb-4">
-                                <p>{ev.args.funder} {ev.args.message}</p>
+                        {allEvents && allEvents.filter((ev) => ev.eventName=="HasFunded").map((ev,index)=>(
+                            <div key={index} className="bg-slate-300 rounded-sm mb-4">
+                                <p>{ev.data["funder"]} {ev.data["message"]}</p>
                             </div>
                         ))}
-                        {wEvents && wEvents.map((ev, index) => (
-                            <div key={index} className="bg-violet-400 rounded-sm mb-4">
-                                <p>{ev.args.message} for campaign {ev.args.campaignAddress}</p>
+                        {allEvents && allEvents.filter((ev) => ev.eventName=="WithdrawAvailable").map((ev,index)=>(
+                            <div key={index} className="bg-green-400 rounded-sm mb-4">
+                                <p>{ev.data["message"]} for campaign {ev.data["campaignAddress"]}</p>
                             </div>
                         ))}
-                        {rEvents && rEvents.map((ev, index) => (
-                            <div key={index} className="bg-emerald-600 rounded-sm mb-4">
-                                <p>{ev.args.message}. Campaign: {ev.args.campaignName}</p>
+                        {allEvents && allEvents.filter((ev) => ev.eventName=="RefundAvailable").map((ev,index)=>(
+                            <div key={index} className="bg-red-400 rounded-sm mb-4">
+                                <p>{ev.data["message"]}. Campaign: {ev.data["campaignName"]}</p>
                             </div>
                         ))}
-                        
                     </div>
                 </div>
             )}
