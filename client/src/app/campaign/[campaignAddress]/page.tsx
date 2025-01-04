@@ -6,6 +6,8 @@ import { useState } from "react";
 import { getContract, prepareContractCall, prepareEvent, ThirdwebContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
 import { lightTheme, TransactionButton, useActiveAccount, useContractEvents, useReadContract } from "thirdweb/react";
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+import {privateKey} from "./env.js"
 
 export default function CampaignPage(){
     const account = useActiveAccount();
@@ -111,6 +113,16 @@ export default function CampaignPage(){
         events: [refundEvent],
     });
 
+    const sdk = ThirdwebSDK.fromPrivateKey(privateKey, "sepolia")
+    const contractFromSdk = sdk.getContract(campaignAddress as string);
+    
+    // const runEvents = async function(){
+    //     const events = (await contractFromSdk).events.getAllEvents();
+        
+    //     console.log("Eventss:   ", events);
+    // }
+
+    // runEvents()
     return (
         <div className="mx-auto max-w-7xl px-2 mt-4 sm:px-6 lg:px-8">
             <div className="flex flex-row justify-between items-center">
@@ -242,6 +254,7 @@ export default function CampaignPage(){
                                 <p>{ev.args.message}. Campaign: {ev.args.campaignName}</p>
                             </div>
                         ))}
+                        
                     </div>
                 </div>
             )}
