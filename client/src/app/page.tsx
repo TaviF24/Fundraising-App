@@ -19,13 +19,29 @@ export default function Home() {
       "function getAllCampaigns() view returns ((address campaignAddress, address owner, string name, uint256 creationTime)[])",
     params: [],
   });
+
+  const { data: price, isPending: isPendingPrice } = useReadContract({
+    contract,
+    method:
+      "function getCurrentPrice() view returns (int256)",
+    params: [],
+  });
   // console.log(campaings);
 
 
   return (
     <main className="mx-auto max-w-7xl px-4 mt-4 sm:px-6 lg:px-8">
       <div className="py-10">
-        <h1 className="text-4xl font-bold mb-4">Campaigns:</h1>
+        <div className="flex justify-between">
+          <h1 className="text-4xl font-bold mb-4">Campaigns:</h1>
+          <div className="bg-stone-700 text-white rounded-md px-3 h-8 flex items-center justify-center">
+            {!isPendingPrice? (
+            <h2>ETH/USD Price: {Number(price)/1e8} USD</h2>
+            ) : (<h2>Loading price...</h2>)}
+          </div>
+          
+        </div>
+        
         <div className="grid grid-cols-3 gap-4">
           {!isLoading && campaings && (
             campaings.length > 0 ?(

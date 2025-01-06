@@ -2,11 +2,14 @@
 pragma solidity ^0.8.17;
 
 import {Fundraising} from "./Fundraising.sol";
+import {PriceConsumer} from "./PriceConsumer.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract FundraisingFactory is Ownable{
 
     bool public isPaused;
+
+    PriceConsumer public priceConsumer = new PriceConsumer();
 
     struct Campaign{
         address campaignAddress;
@@ -45,5 +48,9 @@ contract FundraisingFactory is Ownable{
 
     function togglePause() external onlyOwner{
         isPaused = !isPaused;
+    }
+
+    function getCurrentPrice() external view returns(int256){
+        return priceConsumer.getLatestPrice();
     }
 }
