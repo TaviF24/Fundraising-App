@@ -37,8 +37,8 @@ In this application I used:
     - Solidity v0.8.17
     - Hardhat v2.22.16
     - Thirdweb CLI v0.14.12
-<br>
-<br>
+<br><br>
+
 + For the **client** side:
     - React v18.3
     - Next.js v14.1.0
