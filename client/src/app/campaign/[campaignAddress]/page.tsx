@@ -7,6 +7,7 @@ import { getContract, prepareContractCall, ThirdwebContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
 import { lightTheme, TransactionButton, useActiveAccount, useReadContract } from "thirdweb/react";
 import { ContractEvent, ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { ethers } from "ethers";
 
 async function getEvents(address: string){
     try{
@@ -18,6 +19,18 @@ async function getEvents(address: string){
         console.error(error);
         return [];
     }    
+}
+
+async function getGasPrice(address: string) {
+    try{
+        const sdk = new ThirdwebSDK("sepolia");
+        const contractSdk = await sdk.getContract(address);
+        const gasPrice = contractSdk.estimator.currentGasPriceInGwei();
+        return parseFloat(await gasPrice) ;
+    } catch(error){
+        console.error(error);
+        return 0;
+    }   
 }
 
 export default function CampaignPage(){
@@ -122,8 +135,28 @@ export default function CampaignPage(){
         }
     
         fetchEvents();
-      }, [campaignAddress]);
+    }, [campaignAddress]);
 
+    
+    const [gasPrice, setGasPrice] = useState<number | null>(null);
+
+    useEffect(() => {
+        async function fetchGasPrice() {
+          if (campaignAddress) {
+            try {
+              const price = await getGasPrice(campaignAddress as string);
+              setGasPrice(price);
+            } catch (error) {
+              console.error("Error fetching gas price:", error);
+            }
+          }
+        }
+      
+        fetchGasPrice();
+      }, [campaignAddress]); // Re-fetch if the campaign address changes
+
+    
+    const gasPriceInEth = (gasPrice === null ? gasPrice : (gasPrice * 1e-9).toFixed(8));
     return (
         <div className="mx-auto max-w-7xl px-2 mt-4 sm:px-6 lg:px-8">
             <div className="flex flex-row justify-between items-center">
@@ -257,6 +290,12 @@ export default function CampaignPage(){
                     setIsModalOpen={setIsModalOpen}
                     contract={contract}
                 />
+            )}
+            {!isPendingTiers && (
+                <div className="flex justify-between">
+                    <p className="text-lg font-semibold mt-4">Estimated gas price in ETH: {gasPriceInEth}</p>
+                    <p className="text-lg font-semibold mt-4">Estimated gas price in gwei: {gasPrice}</p>
+                </div>
             )}
             {!isPendingTiers && (
                 <div>
