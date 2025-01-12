@@ -12,9 +12,10 @@ type TierProps = {
     index: number;
     contract: ThirdwebContract;
     isEditing: boolean;
+    gasCost: number;
 };
 
-export default function Tier( {tier, index, contract, isEditing}: TierProps ){
+export default function Tier( {tier, index, contract, isEditing, gasCost}: TierProps ){
     return(
         <div className="max-w-sm flex flex-col justify-between p-6 bg-white border border-slate-100 rounded-lg shadow">
             <div>
@@ -25,7 +26,8 @@ export default function Tier( {tier, index, contract, isEditing}: TierProps ){
             </div>
             <div className="flex flex-row justify-between items-end">
                 <p className="text-xs font-semibold">Total donations: {tier.funders.toString()}</p>
-                <TransactionButton 
+                {gasCost < 20 && (
+                    <TransactionButton 
                     transaction={() => prepareContractCall({
                         contract,
                         method: "function fund(uint256 tierIndex) payable",
@@ -42,9 +44,10 @@ export default function Tier( {tier, index, contract, isEditing}: TierProps ){
                         cursor: "pointer"
                     }}
                 >Select
-                </TransactionButton>
+                    </TransactionButton>
+                )}
             </div>
-            {isEditing && (
+            {isEditing && gasCost < 20 && (
                 <TransactionButton
                     transaction={() => prepareContractCall({
                         contract,

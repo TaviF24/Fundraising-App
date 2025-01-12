@@ -153,7 +153,7 @@ export default function CampaignPage(){
         }
       
         fetchGasPrice();
-      }, [campaignAddress]); // Re-fetch if the campaign address changes
+      }, [campaignAddress]); // refetch if the campaign address changes
 
     
     const gasPriceInEth = (gasPrice === null ? gasPrice : (gasPrice * 1e-9).toFixed(8));
@@ -266,6 +266,7 @@ export default function CampaignPage(){
                                         index={index}
                                         contract={contract}
                                         isEditing={isEditing}
+                                        gasCost={gasPrice!==null ? gasPrice : 0}
                                     />
                                 );
                             })
